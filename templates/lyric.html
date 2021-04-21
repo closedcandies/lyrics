@@ -1,0 +1,16 @@
+{% extends "start.html" %}
+
+{% block links %}
+    <a href="/" class="alert alert-primary" role="note">Search</a>
+{% endblock %}
+{% block content %}
+
+    <h1>{{name}} ({{artist}})</h1>
+    <p>
+    <div class="p-3 mb-2 bg-warning text-dark">
+        {% for line in text %}
+            {{line}}<br>
+        {% endfor %}
+    </div>
+    </p>
+{% endblock %}

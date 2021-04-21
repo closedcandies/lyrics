@@ -1,0 +1,23 @@
+{% extends "start.html" %}
+
+{% block links %}
+    <a href="/" class="alert alert-primary" role="note">Search</a>
+    <a href="/logout" class="alert alert-primary" role="note">Log out</a>
+{% endblock %}
+
+{% block content %}
+    <h1>Ваши песни</h1>
+    {% for track in tracks %}
+        <p class="callout">
+            <h3>{{track.name}}</h3>
+            <div class="alert alert-primary" role="alert">
+                {{texts[track]}}
+            </div>
+            <a type="submit" class="btn btn-primary" href="/edit/{{track.id}}">Редактировать</a>
+        </p>
+    {% endfor %}
+    <p>
+        <br>
+        <a type="submit" class="btn btn-primary" href="/edit/0">Добавить песню</a>
+    </p>
+{% endblock %}

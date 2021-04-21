@@ -1,0 +1,30 @@
+{% extends "start.html" %}
+
+{% block content %}
+    <h1 align="center">Авторизация</h1>
+<div align="center">
+    <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p style="width:20%">
+        {{form.name.label()}}<br>
+        {{form.name(class="form-control")}}
+    </p>
+    <p style="width:20%">
+        {{form.login.label()}}<br>
+        {{form.login(class="form-control")}}
+    </p>
+    <p style="width:20%">
+        {{form.password.label}}<br>
+        {{form.password(class="form-control", type="password")}}
+    </p>
+    <p style="width:20%">
+        {{form.check_password.label}}<br>
+        {{form.check_password(class="form-control", type="password")}}
+    </p>
+    <p>{{form.button(type="submit", class="btn btn-primary")}}</p>
+</form>
+{% if message %}
+<br><div class="alert alert-danger" role="alert" style="width:20%" align="center">{{message}}</div>
+{% endif %}
+</div>
+{% endblock %}
