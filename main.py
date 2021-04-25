@@ -46,6 +46,8 @@ def start_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user:
+        return redirect('/home')
     form = LoginForm()
     message = 0
     if form.validate_on_submit():
@@ -60,6 +62,8 @@ def login():
 
 @app.route('/sign', methods=['GET', 'POST'])
 def signin():
+    if current_user:
+        return redirect('/home')
     form = SignForm()
     message = 0
     if form.validate_on_submit():
@@ -93,6 +97,7 @@ def home():
 
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
 def edit(id):
     is_new = False
     form = EditForm()
@@ -117,6 +122,16 @@ def edit(id):
     except Exception:
         form.text.data, form.name.data = '', ''
     return render_template('edit.html', form=form, id=id)
+
+
+@app.route('delete/<int:id>')
+@login_required
+def delete(id):
+    session = sessions.create_session()
+    track = session.query(Track).filter(Track.id == id).first()
+    session.delete(track)
+    session.commit()
+    return redirect('/home')
 
 
 @app.route('/lyric/<int:id>')
