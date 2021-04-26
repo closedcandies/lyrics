@@ -1,8 +1,10 @@
 from flask import Flask, render_template, redirect
+from flask_restful import Api, abort, Resource
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from forms.search_form import *
 from data import sessions
 from data.model_container import *
+import json
 
 
 ADRESS = '127.0.0.1'
@@ -14,8 +16,44 @@ WORDS_IN_LINE = 10
 REGISTER_FAILED = 'Товарищ! Проверьте правильность введенных данных!'
 ERROR_MESSAGE = 'Простите, товарищ! Мы не смогли обработать этот запрос. Даешь текст ошибки, как в детстве!\n'
 
+
+def abort_if_track_not_found(track_id):
+    session = sessions.create_session()
+    tracks = session.query(Track).get(track_id)
+    if not tracks:
+        abort(404, message=f"Track {track_id} not found")
+
+
+class TrackResourse(Resource):
+    def get(self, id):
+        abort_if_track_not_found(id)
+        session = sessions.create_session()
+        track = session.query(Track).get(id)
+        text = open(TEXTS_PATH + str(id) + '.txt', 'r').readlines()
+        return json.dumps({'track': track.to_dict(), 'text': [text[i].encode('utf-8') for i in range(len(text))]})
+
+    def delete(self, id):
+        abort_if_track_not_found(id)
+        session = sessions.create_session()
+        track = session.query(Track).get(id)
+        session.delete(track)
+        session.commit()
+        return json.dumps({'success': 'OK'})
+
+
+class TrackListResourse(Resource):
+    def get(self):
+        session = sessions.create_session()
+        tracks = session.query(Track).all()
+        print(tracks)
+        return json.dumps({'tracks': [track.to_dict() for track in tracks]})
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+api = Api(app)
+api.add_resource(TrackResourse, '/api/track/<int:id>')
+api.add_resource(TrackListResourse, '/api/tracks')
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -46,7 +84,7 @@ def start_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user:
+    if current_user.is_authenticated:
         return redirect('/home')
     form = LoginForm()
     message = 0
@@ -62,7 +100,7 @@ def login():
 
 @app.route('/sign', methods=['GET', 'POST'])
 def signin():
-    if current_user:
+    if current_user.is_authenticated:
         return redirect('/home')
     form = SignForm()
     message = 0
@@ -124,7 +162,7 @@ def edit(id):
     return render_template('edit.html', form=form, id=id)
 
 
-@app.route('delete/<int:id>')
+@app.route('/delete/<int:id>')
 @login_required
 def delete(id):
     session = sessions.create_session()
@@ -153,7 +191,6 @@ def logout():
 def main():
     sessions.global_init(DB_PATH)
     session = sessions.create_session()
-    session.commit()
     app.run(ADRESS, PORT)
 
 
